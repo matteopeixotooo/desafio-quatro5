@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quatro5 - Painel do Ricardo</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="dist/app.js"></script>
+
+</head>
+
+<body>
+
+  <div class="conteiner">
+    <header class="cabecalho">
+      <h1 class="logo-empresa">QUATRO5</h1>
+      <p class="subtitulo">Painel de Controle do Ricardo</p>
+    </header>
+
+    <section class="secao-indicadores">
+
+      <div class="cartao-kpi">
+        <div class="conteudo-kpi">
+          <p class="titulo-kpi">Tarefas Atrasadas</p>
+          <h3 id="quantidade-atrasadas" class="numero-kpi">0</h3>
+        </div>
+        <p class="ajuda-kpi">Ação: Mudar prioridades antes que o cliente reclame.</p>
+      </div>
+
+      <div class="cartao-kpi">
+        <p class="titulo-kpi">Trabalho em Andamento por Funcionário</p>
+        <div id="lista-carga-trabalho" class="lista-funcionarios">
+        </div>
+        <p class="ajuda-kpi">Ação: Tirar tarefas de quem está afogado e passar para quem está ocioso.</p>
+      </div>
+
+    </section>
+
+    <section class="secao-tabela">
+      <div class="topo-tabela">
+        <h2>Lista de Atividades do Time</h2>
+      </div>
+
+      <table class="tabela-atividades">
+        <thead>
+          <tr>
+            <th>Nome da Atividade</th>
+            <th>Quem está Fazendo</th>
+            <th>Prazo de Entrega</th>
+            <th>Situação</th>
+          </tr>
+        </thead>
+        <tbody id="corpo-tabela-atividades">
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <script src="dist/app.js"></script>
+</body>
+
+</html>
