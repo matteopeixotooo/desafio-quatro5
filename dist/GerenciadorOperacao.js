@@ -1,9 +1,8 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.GerenciadorOperacao = void 0;
-class GerenciadorOperacao {
-    listaAtividades = [];
-    listaEquipe = [];
+export class GerenciadorOperacao {
+    constructor() {
+        this.listaAtividades = [];
+        this.listaEquipe = [];
+    }
     adicionarFuncionario(funcionario) {
         this.listaEquipe.push(funcionario);
     }
@@ -79,4 +78,3 @@ class GerenciadorOperacao {
         }
     }
 }
-exports.GerenciadorOperacao = GerenciadorOperacao;

@@ -1,12 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Atividade = void 0;
-class Atividade {
-    id;
-    titulo;
-    responsavelId;
-    situacao;
-    prazo;
+export class Atividade {
     constructor(id, titulo, responsavelId, prazo, situacaoInicial = "A Fazer") {
         this.id = id;
         this.titulo = titulo;
@@ -19,4 +11,3 @@ class Atividade {
         return this.situacao !== "Concluido" && this.prazo < hoje;
     }
 }
-exports.Atividade = Atividade;

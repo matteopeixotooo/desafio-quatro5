@@ -1,10 +1,9 @@
 {
   "compilerOptions": {
-    "target": "ES2022" /* Versão moderna do JS */,
-    "module": "NodeNext" /* Trata os módulos corretamente */,
-    "moduleResolution": "NodeNext" /* Resolve os imports com .js */,
-    "outDir": "./dist" /* Pasta onde vai o JS compilado */,
-    "rootDir": "./" /* Onde estão seus arquivos .ts */,
-    "strict": true /* Exigência do teste da Quatro5 */
+    "target": "ES2020",
+    "module": "ES6",
+    "moduleResolution": "bundler",
+    "outDir": "./dist",
+    "strict": true
   }
 }
