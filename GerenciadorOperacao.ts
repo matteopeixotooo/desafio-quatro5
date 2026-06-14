@@ -2,97 +2,63 @@ import { Atividade } from "./Atividade.js";
 import { Funcionario } from "./Funcionario.js";
 
 export class GerenciadorOperacao {
-  private listaAtividades: Atividade[] = [];
-  private listaEquipe: Funcionario[] = [];
+  private _funcionarios: Funcionario[] = [];
+  private _atividades: Atividade[] = [];
 
-  adicionarFuncionario(funcionario: Funcionario): void {
-    this.listaEquipe.push(funcionario);
+  // Getters para permitir que o app.ts leia as listas sem violar o encapsulamento
+  public get funcionarios(): Funcionario[] {
+    return this._funcionarios;
   }
 
-  adicionarAtividade(atividade: Atividade): void {
-    this.listaAtividades.push(atividade);
+  public get atividades(): Atividade[] {
+    return this._atividades;
   }
 
-  obterFuncionarioPorId(id: number): Funcionario | undefined {
-    return this.listaEquipe.find((f) => f.id === id);
+  public adicionarFuncionario(funcionario: Funcionario): void {
+    this._funcionarios.push(funcionario);
   }
 
-  calcularTotalAtrasadas(): number {
-    return this.listaAtividades.filter((a) => a.verificarAtraso()).length;
+  public adicionarAtividade(atividade: Atividade): void {
+    this._atividades.push(atividade);
   }
 
-  calcularCargaTrabalho(): Record<string, number> {
-    const distribuicao: Record<string, number> = {};
-
-    this.listaEquipe.forEach((funcionario) => {
-      const tarefasAtivas = this.listaAtividades.filter(
-        (a) =>
-          a.responsavelId === funcionario.id && a.situacao === "Em Andamento",
-      ).length;
-
-      distribuicao[funcionario.nome] = tarefasAtivas;
-    });
-
-    return distribuicao;
-  }
-
-  // Vai alimentar o HTML com os dados atuais das classes
-  atualizarTela(): void {
+  public atualizarTela(): void {
     const elementoAtrasadas = document.getElementById("quantidade-atrasadas");
-    const totalAtrasadas = this.calcularTotalAtrasadas();
+    const elementoCarga = document.getElementById("lista-carga-trabalho");
+    const hoje = new Date();
+
+    // 1. Calcula o total de tarefas atrasadas (não concluídas e com prazo vencido)
+    const totalAtrasadas = this._atividades.filter(
+      (a) => a.situacao !== "Concluido" && a.prazo < hoje,
+    ).length;
 
     if (elementoAtrasadas) {
-      elementoAtrasadas.innerText = totalAtrasadas.toString();
-      elementoAtrasadas.className =
-        totalAtrasadas > 0 ? "numero-kpi alerta-vermelho" : "numero-kpi";
+      elementoAtrasadas.textContent = totalAtrasadas.toString();
     }
 
-    const elementoCarga = document.getElementById("lista-carga-trabalho");
+    // 2. Calcula a carga de trabalho atual por funcionário (apenas 'Em Andamento')
     if (elementoCarga) {
       elementoCarga.innerHTML = "";
-      const dadosCarga = this.calcularCargaTrabalho();
+      this._funcionarios.forEach((f) => {
+        const tarefasAtivas = this._atividades.filter(
+          (a) => a.idFuncionario === f.id && a.situacao === "Em Andamento",
+        ).length;
 
-      for (const [nome, total] of Object.entries(dadosCarga)) {
-        elementoCarga.innerHTML += `
-                    <div class="linha-funcionario">
-                        <span>${nome}</span>
-                        <span><strong>${total}</strong> em andamento</span>
-                    </div>
-                `;
-      }
-    }
+        const item = document.createElement("div");
+        item.className = "item-funcionario";
+        item.style.display = "flex";
+        item.style.justifyContent = "space-between";
+        item.style.marginBottom = "8px";
 
-    const elementoTabela = document.getElementById("corpo-tabela-atividades");
-    if (elementoTabela) {
-      elementoTabela.innerHTML = "";
+        // Aplica destaque visual se o funcionário estiver sobrecarregado (ex: Lucas com 3)
+        const estiloDestaque =
+          tarefasAtivas >= 3 ? "color: #d32f2f; font-weight: bold;" : "";
 
-      this.listaAtividades.forEach((atividade) => {
-        const funcionario = this.obterFuncionarioPorId(atividade.responsavelId);
-        const nomeFuncionario = funcionario ? funcionario.nome : "Sem Alocação";
-        const dataFormatada = atividade.prazo.toLocaleDateString("pt-BR");
-
-        let textoSituacao = "A Fazer";
-        let classeCracha = "situacao-fazer";
-
-        if (atividade.verificarAtraso()) {
-          textoSituacao = "⚠️ Atrasada";
-          classeCracha = "situacao-atrasado";
-        } else if (atividade.situacao === "Em Andamento") {
-          textoSituacao = "Em Andamento";
-          classeCracha = "situacao-andamento";
-        } else if (atividade.situacao === "Concluido") {
-          textoSituacao = "Concluído";
-          classeCracha = "situacao-concluido";
-        }
-
-        elementoTabela.innerHTML += `
-                    <tr>
-                        <td><strong>${atividade.titulo}</strong></td>
-                        <td>${nomeFuncionario}</td>
-                        <td>${dataFormatada}</td>
-                        <td><span class="cracha ${classeCracha}">${textoSituacao}</span></td>
-                    </tr>
-                `;
+        item.innerHTML = `
+          <span>${f.nome}</span>
+          <span style="${estiloDestaque}">${tarefasAtivas} em andamento</span>
+        `;
+        elementoCarga.appendChild(item);
       });
     }
   }

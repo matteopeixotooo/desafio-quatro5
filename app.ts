@@ -2,6 +2,13 @@ import { GerenciadorOperacao } from "./GerenciadorOperacao.js";
 import { Atividade } from "./Atividade.js";
 import { Funcionario } from "./Funcionario.js";
 
+const inputBusca = document.getElementById(
+  "busca-responsavel",
+) as HTMLInputElement;
+const selectFiltro = document.getElementById(
+  "filtro-situacao",
+) as HTMLSelectElement;
+
 const operacao = new GerenciadorOperacao();
 
 operacao.adicionarFuncionario(new Funcionario(1, "Lucas"));
@@ -15,7 +22,6 @@ operacao.adicionarFuncionario(new Funcionario(8, "Camila"));
 operacao.adicionarFuncionario(new Funcionario(9, "Diego"));
 operacao.adicionarFuncionario(new Funcionario(10, "Fernanda"));
 
-// Criar prazos baseados no dia de hoje para testar os alertas
 const amanha = new Date();
 amanha.setDate(amanha.getDate() + 1);
 const ontem = new Date();
@@ -23,8 +29,6 @@ ontem.setDate(ontem.getDate() - 1);
 const semanaQueVem = new Date();
 semanaQueVem.setDate(semanaQueVem.getDate() + 7);
 
-// Criando cenário hipotético
-// 1. Lucas está AFOGADO (Acumulando 3 tarefas em andamento) -> Resolve a dor "Tem gente afogada de tarefa"
 operacao.adicionarAtividade(
   new Atividade(101, "Ajustar Planilha de Custos", 1, amanha, "Em Andamento"),
 );
@@ -46,13 +50,9 @@ operacao.adicionarAtividade(
     "Em Andamento",
   ),
 );
-
-// 2. Beatriz tem uma tarefa que ESTOUROU o prazo -> Resolve a dor "Prazo combinado estoura e eu só sei depois"
 operacao.adicionarAtividade(
   new Atividade(104, "Enviar Proposta para Cliente VIP", 2, ontem, "A Fazer"),
 );
-
-// 3. Bruno tem outra tarefa ATRASADA também -> Aumenta o número do indicador para alertar o Ricardo
 operacao.adicionarAtividade(
   new Atividade(
     105,
@@ -62,8 +62,6 @@ operacao.adicionarAtividade(
     "Em Andamento",
   ),
 );
-
-// 4. Mateus, Mariana e Amanda estão com carga normal (1 tarefa em andamento cada)
 operacao.adicionarAtividade(
   new Atividade(106, "Desenvolver UI do Dashboard", 3, amanha, "Em Andamento"),
 );
@@ -85,23 +83,88 @@ operacao.adicionarAtividade(
     "Em Andamento",
   ),
 );
-
-// 5. Camila e Diego estão com tarefas planejadas, mas ainda não começaram ('A Fazer' não conta como carga ativa)
 operacao.adicionarAtividade(
   new Atividade(109, "Planejar Reunião de SPRINT", 8, semanaQueVem, "A Fazer"),
 );
 operacao.adicionarAtividade(
   new Atividade(110, "Disparar E-mail Marketing", 9, amanha, "A Fazer"),
 );
-
-// 6. Fernanda concluiu o trabalho dela (Aparecerá com 0 tarefas ativas na lista)
 operacao.adicionarAtividade(
   new Atividade(111, "Auditoria dos Contratos Antigos", 10, ontem, "Concluido"),
 );
 
-// 7. Thiago está totalmente ocioso
+function renderizarTabelaFiltrada(): void {
+  const corpoTabela = document.getElementById("corpo-tabela-atividades");
+  if (!corpoTabela) return;
 
-// Mandar a tela atualizar quando navegador finalizar a leitura o HTML
+  corpoTabela.innerHTML = "";
+
+  const termoBusca = inputBusca.value.toLowerCase().trim();
+  const situacaoSelecionada = selectFiltro.value;
+
+  const atividadesFiltradas = operacao.atividades.filter(
+    (atividade: Atividade) => {
+      const funcionarioObj = operacao.funcionarios.find(
+        (f: Funcionario) => f.id === atividade.idFuncionario,
+      );
+      const nomeFuncionario = funcionarioObj
+        ? funcionarioObj.nome.toLowerCase()
+        : "não alocado";
+
+      const bateResponsavel = nomeFuncionario.includes(termoBusca);
+
+      let statusReal: string = atividade.situacao;
+      const hoje = new Date();
+      if (atividade.situacao !== "Concluido" && atividade.prazo < hoje) {
+        statusReal = "Atrasada";
+      }
+
+      const bateSituacao =
+        situacaoSelecionada === "Todos" || statusReal === situacaoSelecionada;
+
+      return bateResponsavel && bateSituacao;
+    },
+  );
+
+  atividadesFiltradas.forEach((atividade: Atividade) => {
+    const funcionarioObj = operacao.funcionarios.find(
+      (f: Funcionario) => f.id === atividade.idFuncionario,
+    );
+    const nomeFuncionario = funcionarioObj
+      ? funcionarioObj.nome
+      : "Não alocado";
+
+    const tr = document.createElement("tr");
+
+    let statusReal: string = atividade.situacao;
+    let classeBadge: string = "badge-a-fazer";
+
+    const hoje = new Date();
+    if (atividade.situacao !== "Concluido" && atividade.prazo < hoje) {
+      statusReal = "Atrasada";
+      classeBadge = "badge-atrasada";
+    } else if (atividade.situacao === "Em Andamento") {
+      classeBadge = "badge-em-andamento";
+    } else if (atividade.situacao === "Concluido") {
+      classeBadge = "badge-concluido";
+    }
+
+    tr.innerHTML = `
+      <td><strong>${atividade.nome}</strong></td>
+      <td>${nomeFuncionario}</td>
+      <td>${atividade.prazo.toLocaleDateString("pt-BR")}</td>
+      <td><span class="badge ${classeBadge}">${statusReal}</span></td>
+    `;
+    corpoTabela.appendChild(tr);
+  });
+}
+
+if (inputBusca && selectFiltro) {
+  inputBusca.addEventListener("input", renderizarTabelaFiltrada);
+  selectFiltro.addEventListener("change", renderizarTabelaFiltrada);
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   operacao.atualizarTela();
+  renderizarTabelaFiltrada();
 });

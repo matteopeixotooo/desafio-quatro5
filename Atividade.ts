@@ -1,28 +1,43 @@
-export type SituacaoAtividade = "A Fazer" | "Em Andamento" | "Concluido";
-
 export class Atividade {
-  public id: number;
-  public titulo: string;
-  public responsavelId: number;
-  public situacao: SituacaoAtividade;
-  public prazo: Date;
+  private _id: number;
+  private _nome: string;
+  private _idFuncionario: number;
+  private _prazo: Date;
+  private _situacao: string;
 
   constructor(
     id: number,
-    titulo: string,
-    responsavelId: number,
+    nome: string,
+    idFuncionario: number,
     prazo: Date,
-    situacaoInicial: SituacaoAtividade = "A Fazer",
+    situacao: string,
   ) {
-    this.id = id;
-    this.titulo = titulo;
-    this.responsavelId = responsavelId;
-    this.situacao = situacaoInicial;
-    this.prazo = prazo;
+    this._id = id;
+    this._nome = nome;
+    this._idFuncionario = idFuncionario;
+    this._prazo = prazo;
+    this._situacao = situacao;
   }
 
-  verificarAtraso(): boolean {
-    const hoje = new Date();
-    return this.situacao !== "Concluido" && this.prazo < hoje;
+  // --- GETTERS PÚBLICOS (A chave para sumir o vermelho dos outros arquivos) ---
+
+  public get id(): number {
+    return this._id;
+  }
+
+  public get nome(): string {
+    return this._nome;
+  }
+
+  public get idFuncionario(): number {
+    return this._idFuncionario;
+  }
+
+  public get prazo(): Date {
+    return this._prazo;
+  }
+
+  public get situacao(): string {
+    return this._situacao;
   }
 }
