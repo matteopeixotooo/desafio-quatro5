@@ -22,6 +22,7 @@ operacao.adicionarFuncionario(new Funcionario(8, "Camila"));
 operacao.adicionarFuncionario(new Funcionario(9, "Diego"));
 operacao.adicionarFuncionario(new Funcionario(10, "Fernanda"));
 
+// Criar prazos baseados no dia de hoje para testar os alertas
 const amanha = new Date();
 amanha.setDate(amanha.getDate() + 1);
 const ontem = new Date();
@@ -29,6 +30,7 @@ ontem.setDate(ontem.getDate() - 1);
 const semanaQueVem = new Date();
 semanaQueVem.setDate(semanaQueVem.getDate() + 7);
 
+// Criando cenário hipotético
 operacao.adicionarAtividade(
   new Atividade(101, "Ajustar Planilha de Custos", 1, amanha, "Em Andamento"),
 );
@@ -93,6 +95,7 @@ operacao.adicionarAtividade(
   new Atividade(111, "Auditoria dos Contratos Antigos", 10, ontem, "Concluido"),
 );
 
+// --- FUNÇÃO DE RENDEREZAÇÃO DA TABELA COM FILTROS COMBINADOS ---
 function renderizarTabelaFiltrada(): void {
   const corpoTabela = document.getElementById("corpo-tabela-atividades");
   if (!corpoTabela) return;
@@ -102,6 +105,7 @@ function renderizarTabelaFiltrada(): void {
   const termoBusca = inputBusca.value.toLowerCase().trim();
   const situacaoSelecionada = selectFiltro.value;
 
+  // Filtra as atividades baseado nas entradas do Ricardo
   const atividadesFiltradas = operacao.atividades.filter(
     (atividade: Atividade) => {
       const funcionarioObj = operacao.funcionarios.find(
@@ -113,7 +117,7 @@ function renderizarTabelaFiltrada(): void {
 
       const bateResponsavel = nomeFuncionario.includes(termoBusca);
 
-      let statusReal: string = atividade.situacao;
+      let statusReal = atividade.situacao;
       const hoje = new Date();
       if (atividade.situacao !== "Concluido" && atividade.prazo < hoje) {
         statusReal = "Atrasada";
@@ -126,7 +130,9 @@ function renderizarTabelaFiltrada(): void {
     },
   );
 
+  // Monta as linhas da tabela dinamicamente
   atividadesFiltradas.forEach((atividade: Atividade) => {
+    // CORRIGIDO AQUI: Mudado de activity para atividade
     const funcionarioObj = operacao.funcionarios.find(
       (f: Funcionario) => f.id === atividade.idFuncionario,
     );
@@ -136,12 +142,19 @@ function renderizarTabelaFiltrada(): void {
 
     const tr = document.createElement("tr");
 
-    let statusReal: string = atividade.situacao;
-    let classeBadge: string = "badge-a-fazer";
+    let statusReal = atividade.situacao;
+    let classeBadge = "badge-a-fazer";
 
     const hoje = new Date();
-    if (atividade.situacao !== "Concluido" && atividade.prazo < hoje) {
-      statusReal = "Atrasada";
+    hoje.setHours(0, 0, 0, 0);
+    const dataPrazo = new Date(atividade.prazo);
+    dataPrazo.setHours(0, 0, 0, 0);
+
+    if (atividade.situacao !== "Concluido" && dataPrazo < hoje) {
+      const diferencaTempo = hoje.getTime() - dataPrazo.getTime();
+      const diferencaDias = Math.floor(diferencaTempo / (1000 * 60 * 60 * 24));
+
+      statusReal = `⚠️ Atrasada (${diferencaDias} ${diferencaDias === 1 ? "dia" : "dias"})`;
       classeBadge = "badge-atrasada";
     } else if (atividade.situacao === "Em Andamento") {
       classeBadge = "badge-em-andamento";
@@ -153,7 +166,7 @@ function renderizarTabelaFiltrada(): void {
       <td><strong>${atividade.nome}</strong></td>
       <td>${nomeFuncionario}</td>
       <td>${atividade.prazo.toLocaleDateString("pt-BR")}</td>
-      <td><span class="badge ${classeBadge}">${statusReal}</span></td>
+      <td><span class="badge ${classeBadge}" style="${classeBadge === "badge-atrasada" ? "background-color: #d32f2f; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;" : ""}">${statusReal}</span></td>
     `;
     corpoTabela.appendChild(tr);
   });

@@ -14,12 +14,14 @@ operacao.adicionarFuncionario(new Funcionario(7, "Bruno"));
 operacao.adicionarFuncionario(new Funcionario(8, "Camila"));
 operacao.adicionarFuncionario(new Funcionario(9, "Diego"));
 operacao.adicionarFuncionario(new Funcionario(10, "Fernanda"));
+// Criar prazos baseados no dia de hoje para testar os alertas
 const amanha = new Date();
 amanha.setDate(amanha.getDate() + 1);
 const ontem = new Date();
 ontem.setDate(ontem.getDate() - 1);
 const semanaQueVem = new Date();
 semanaQueVem.setDate(semanaQueVem.getDate() + 7);
+// Criando cenário hipotético
 operacao.adicionarAtividade(new Atividade(101, "Ajustar Planilha de Custos", 1, amanha, "Em Andamento"));
 operacao.adicionarAtividade(new Atividade(102, "Revisar Código do Sistema", 1, semanaQueVem, "Em Andamento"));
 operacao.adicionarAtividade(new Atividade(103, "Configurar Servidor de Testes", 1, amanha, "Em Andamento"));
@@ -31,6 +33,7 @@ operacao.adicionarAtividade(new Atividade(108, "Criar Artes para Redes Sociais",
 operacao.adicionarAtividade(new Atividade(109, "Planejar Reunião de SPRINT", 8, semanaQueVem, "A Fazer"));
 operacao.adicionarAtividade(new Atividade(110, "Disparar E-mail Marketing", 9, amanha, "A Fazer"));
 operacao.adicionarAtividade(new Atividade(111, "Auditoria dos Contratos Antigos", 10, ontem, "Concluido"));
+// --- FUNÇÃO DE RENDEREZAÇÃO DA TABELA COM FILTROS COMBINADOS ---
 function renderizarTabelaFiltrada() {
     const corpoTabela = document.getElementById("corpo-tabela-atividades");
     if (!corpoTabela)
@@ -38,6 +41,7 @@ function renderizarTabelaFiltrada() {
     corpoTabela.innerHTML = "";
     const termoBusca = inputBusca.value.toLowerCase().trim();
     const situacaoSelecionada = selectFiltro.value;
+    // Filtra as atividades baseado nas entradas do Ricardo
     const atividadesFiltradas = operacao.atividades.filter((atividade) => {
         const funcionarioObj = operacao.funcionarios.find((f) => f.id === atividade.idFuncionario);
         const nomeFuncionario = funcionarioObj
@@ -52,7 +56,9 @@ function renderizarTabelaFiltrada() {
         const bateSituacao = situacaoSelecionada === "Todos" || statusReal === situacaoSelecionada;
         return bateResponsavel && bateSituacao;
     });
+    // Monta as linhas da tabela dinamicamente
     atividadesFiltradas.forEach((atividade) => {
+        // CORRIGIDO AQUI: Mudado de activity para atividade
         const funcionarioObj = operacao.funcionarios.find((f) => f.id === atividade.idFuncionario);
         const nomeFuncionario = funcionarioObj
             ? funcionarioObj.nome
@@ -61,8 +67,13 @@ function renderizarTabelaFiltrada() {
         let statusReal = atividade.situacao;
         let classeBadge = "badge-a-fazer";
         const hoje = new Date();
-        if (atividade.situacao !== "Concluido" && atividade.prazo < hoje) {
-            statusReal = "Atrasada";
+        hoje.setHours(0, 0, 0, 0);
+        const dataPrazo = new Date(atividade.prazo);
+        dataPrazo.setHours(0, 0, 0, 0);
+        if (atividade.situacao !== "Concluido" && dataPrazo < hoje) {
+            const diferencaTempo = hoje.getTime() - dataPrazo.getTime();
+            const diferencaDias = Math.floor(diferencaTempo / (1000 * 60 * 60 * 24));
+            statusReal = `⚠️ Atrasada (${diferencaDias} ${diferencaDias === 1 ? "dia" : "dias"})`;
             classeBadge = "badge-atrasada";
         }
         else if (atividade.situacao === "Em Andamento") {
@@ -75,7 +86,7 @@ function renderizarTabelaFiltrada() {
       <td><strong>${atividade.nome}</strong></td>
       <td>${nomeFuncionario}</td>
       <td>${atividade.prazo.toLocaleDateString("pt-BR")}</td>
-      <td><span class="badge ${classeBadge}">${statusReal}</span></td>
+      <td><span class="badge ${classeBadge}" style="${classeBadge === "badge-atrasada" ? "background-color: #d32f2f; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;" : ""}">${statusReal}</span></td>
     `;
         corpoTabela.appendChild(tr);
     });
